@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace Naivebayes;
 
 use Sastrawi\Stemmer\StemmerFactory;
 
@@ -59,10 +59,18 @@ class Naivebayes
     public function count(array $datasets)
     {
         $this->datasets = $datasets;
-        $words = [];
+        $dataset_preprocessed = [];
         foreach ($this->datasets as $dataset) {
+            $dataset_preprocessed[] =
+                [
+                    'text' => $this->preprocessing($dataset['text']),
+                    'label' => $dataset['label']
+                ];
+        }
+        $words = [];
+        foreach ($dataset_preprocessed as $dataset) {
             $text_tokenized = explode(' ', $dataset['text']);
-            $words += $text_tokenized;
+            $words = array_merge($text_tokenized, $words);
         }
         // unique $words
         $words = array_unique($words);
@@ -74,7 +82,7 @@ class Naivebayes
                 'positif' => 0,
                 'negatif' => 0
             ];
-            foreach ($this->datasets as $dataset) {
+            foreach ($dataset_preprocessed as $dataset) {
 
                 if (strpos($dataset['text'], $word)) {
                     if (strtolower($dataset['label']) == 'positif') {
@@ -84,9 +92,13 @@ class Naivebayes
                     }
                 }
             }
+            if ($word_count[$word]['positif'] == 0 && $word_count[$word]['negatif'] == 0) {
+                unset($word_count[$word]);
+            }
         }
+
         $this->word_counts = $word_count;
-        $total_data = count($this->datasets);
+        $total_data = count($dataset_preprocessed);
         $positif_data = array_intersect(array_column($this->datasets, 'label'), ['Positif']);
         $positif_data = count($positif_data);
 
