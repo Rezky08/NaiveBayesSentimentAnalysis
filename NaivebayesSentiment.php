@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use Exception;
-use Illuminate\Support\Collection;
 use Sastrawi\Stemmer\StemmerFactory;
 
 class Naivebayes
